@@ -56,6 +56,8 @@ BEGIN_MESSAGE_MAP(CcalculatorDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_RESULT, &CcalculatorDlg::OnBnClickedButtonResult)
 	ON_BN_CLICKED(IDC_BUTTON_LEFT, &CcalculatorDlg::OnBnClickedButtonLeft)
 	ON_BN_CLICKED(IDC_BUTTON_RIGHT, &CcalculatorDlg::OnBnClickedButtonRight)
+	ON_BN_CLICKED(IDC_BUTTON_CANCEL, &CcalculatorDlg::OnBnClickedButtonCancel)
+	ON_BN_CLICKED(IDC_BUTTON_CLEAR, &CcalculatorDlg::OnBnClickedButtonClear)
 END_MESSAGE_MAP()
 
 
@@ -120,6 +122,57 @@ void CcalculatorDlg::OnBnClickedOk()
 }
 
 
+bool CcalculatorDlg::m_IsLegal()
+{
+	bool isLegal = true;
+	CString insertStr="*";
+	char last='\0',now;
+	bool flag = true;
+	int countofMark = 0;
+	m_DealNum();
+	if (!Equation.empty()) {
+		for (vector<CString>::iterator it = Equation.begin(); it !=Equation.end(); it++) {
+			
+			if (*it[0] == '(') {
+				countofMark += 1;
+			}
+			else if (*it[0] == ')') {
+				countofMark -= 1;
+			}
+			{
+				now = *it[0];
+
+				if (last == ')'&& now == '(') {	//如果是两个括号之间的话,添加一个*号
+					it = Equation.insert(it, insertStr);//将iterator指向*
+						countofMark--;//撤销刚才对 "("符号的计数
+				}
+				if (')' == last && now >= 48 && now <= 57) {//添加括号
+					it = Equation.insert(it, insertStr);
+				}
+				if ('(' == now && last >= 48 && last <= 57) {//添加括号
+					it = Equation.insert(it, insertStr);
+						countofMark--;//撤销刚才对 "("符号的计数
+				}
+				if ('(' == last && (now== '+' || now== '-' || now == '*' || now == '/')) {	//如果出现了(*+/-的情况是不合法的
+					flag = false;
+				}
+				if (')' == now && (last == '+' || last== '-' || last == '*' || last == '/')) {//如果出现了*+/-的情况是不合法的
+					flag = false;
+				}
+				if (now <= 47 && now >= 42 && last >= 42 && last <= 47) {//如果是两个+-*/的符号,那么不合法
+					flag = false;
+				}
+				last = now;
+			}
+			
+		}
+		if (countofMark != 0 || !flag) {
+			isLegal = false;
+		}
+	}
+	return isLegal;
+}
+
 void CcalculatorDlg::m_ClearText()
 {
 	m_Edit = "";
@@ -141,6 +194,8 @@ bool CcalculatorDlg::m_DealNum()
 bool CcalculatorDlg::m_ToPostfix()
 {
 	CString tmp;
+	TmpStack.clear();
+	if(!Equation.empty())
 	reverse(Equation.begin(), Equation.end());
 	while(!Equation.empty()) {
 		tmp=Equation.back();
@@ -189,20 +244,22 @@ double CcalculatorDlg::m_Result()
 	CString tmp ;
 	double numX,numY;
 	double result;
+	TmpStack.clear();
+	if(!FinalStack.empty())
 	reverse(FinalStack.begin(), FinalStack.end());
 	while (!FinalStack.empty()) {
 		tmp= FinalStack.back();
 		FinalStack.pop_back();
 		if (tmp[0] <= '9' && tmp[0] >= '0') {
-			Equation.push_back(tmp);
+			TmpStack.push_back(tmp);
 		}
 		else {
-			CString tmpX = Equation.back();
+			CString tmpX = TmpStack.back();
 			numY = atof(tmpX);
-			Equation.pop_back();
-			CString tmpY = Equation.back();
+			TmpStack.pop_back();
+			CString tmpY = TmpStack.back();
 			numX = atof(tmpY);
-			Equation.pop_back();
+			TmpStack.pop_back();
 			switch (tmp[0]) {
 			case '+':result = numX + numY; break;
 			case '-':result = numX - numY; break;
@@ -210,11 +267,11 @@ double CcalculatorDlg::m_Result()
 			case '/':result = numX / numY; break;
 			}
 			tmp.Format("%f",result);
-			Equation.push_back(tmp);
+			TmpStack.push_back(tmp);
 		}
 	}
-	
-	tmp=Equation.back();
+	if(!TmpStack.empty())
+		tmp=TmpStack.back();
 	numX = atof(tmp);
 	return numX;
 }
@@ -330,6 +387,9 @@ void CcalculatorDlg::OnBnClickedButtonNine()
 
 void CcalculatorDlg::OnBnClickedButtonDot()
 {
+	if (m_Edit.Find('.')>=0) {
+		return;
+	}
 	if (flag) {
 		m_EditText = "";
 		flag = false;
@@ -368,7 +428,10 @@ void CcalculatorDlg::OnBnClickedButtonZroe()
 
 void CcalculatorDlg::OnBnClickedButtonPlus()
 {
-	UpdateData(true);
+	if (flag) {
+		m_EditText = "";
+		flag = false;
+	}
 	m_EditText += '+';
 	m_DealNum();
 	CString tmp = "+";
@@ -379,6 +442,10 @@ void CcalculatorDlg::OnBnClickedButtonPlus()
 
 void CcalculatorDlg::OnBnClickedButtonMinus()
 {
+	if (flag) {
+		m_EditText = "";
+		flag = false;
+	}
 	m_EditText += '-';
 	m_DealNum();
 	CString tmp = "-";
@@ -389,6 +456,10 @@ void CcalculatorDlg::OnBnClickedButtonMinus()
 
 void CcalculatorDlg::OnBnClickedButton15Multi()
 {
+	if (flag) {
+		m_EditText = "";
+		flag = false;
+	}
 	m_EditText += '*';
 	m_DealNum();
 	CString tmp = "*";
@@ -399,6 +470,10 @@ void CcalculatorDlg::OnBnClickedButton15Multi()
 
 void CcalculatorDlg::OnBnClickedButtonDivide()
 {
+	if (flag) {
+		m_EditText = "";
+		flag = false;
+	}
 	m_EditText += '/';
 	m_DealNum();
 	CString tmp = "/";
@@ -410,17 +485,37 @@ void CcalculatorDlg::OnBnClickedButtonDivide()
 void CcalculatorDlg::OnBnClickedButtonResult()
 {
 	double num;
-	m_DealNum();
-	m_ToPostfix();
-	num=m_Result();
-	m_EditText.Format("%f",num);
-	UpdateData(false);
-	flag = true;
+	CString tail;
+	if (m_IsLegal()==false) {
+		MessageBox("错误,请重新输入!", "消息:", MB_OK| MB_ICONERROR);
+		return;
+	}
+	else {
+		if (flag) {
+			m_EditText = "";
+			flag = false;
+		}
+		m_DealNum();
+		m_ToPostfix();//转换为后缀表达式
+		num = m_Result();//计算得到结果
+
+
+		tail.Format("=%f", num);
+		m_EditText += tail;
+		UpdateData(false);
+		flag = true;
+	}
+	
+	
 }
 
 
 void CcalculatorDlg::OnBnClickedButtonLeft()
 {
+	if (flag) {
+		m_EditText = "";
+		flag = false;
+	}
 	m_EditText += '(';
 	m_DealNum();
 	CString tmp = "(";
@@ -431,9 +526,54 @@ void CcalculatorDlg::OnBnClickedButtonLeft()
 
 void CcalculatorDlg::OnBnClickedButtonRight()
 {
+	if (flag) {
+		m_EditText = "";
+		flag = false;
+	}
 	m_EditText += ')';
 	m_DealNum();
 	CString tmp = ")";
 	Equation.push_back(tmp);
+	UpdateData(false);
+}
+
+
+void CcalculatorDlg::OnBnClickedButtonCancel()
+{
+	
+	int num = m_EditText.GetLength();
+	int length = m_Edit.GetLength();
+	char tmp;
+	if (num > 0) {//如果有东西在输入框的话
+		tmp= m_EditText.GetAt(num-1);
+		m_EditText.Delete(num - 1, 1);
+		if (tmp<='9'&& tmp>='0') {//如果删掉的是数字,那么不用出栈数据
+			if(length>0)
+			m_Edit.Delete(length - 1, 1);	//字符串减掉最后一个就好
+			//UpdateData(false);
+		}
+		else {		
+			if(!Equation.empty())			//出栈数据
+			Equation.pop_back();
+		}
+		
+	}
+	if (m_EditText.Find('=')>=0) {
+		m_EditText = "";
+		m_Edit = "";
+	}
+	UpdateData(false);
+}
+
+
+
+
+void CcalculatorDlg::OnBnClickedButtonClear()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	m_EditText = "";
+	m_Edit = "";
+	TmpStack.clear();
+	Equation.clear();
 	UpdateData(false);
 }

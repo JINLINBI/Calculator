@@ -41,9 +41,8 @@ public:
 	CString m_EditText;
 	vector<CString> TmpStack;
 	vector<CString> FinalStack;
-	vector<double> SymbolStack;
-	vector<double> Data;
 	vector<CString> Equation;
+	bool m_IsLegal();
 	void m_ClearText();
 	bool m_DealNum();
 	bool flag = 0;
@@ -69,4 +68,6 @@ public:
 	afx_msg void OnBnClickedButtonResult();
 	afx_msg void OnBnClickedButtonLeft();
 	afx_msg void OnBnClickedButtonRight();
+	afx_msg void OnBnClickedButtonCancel();
+	afx_msg void OnBnClickedButtonClear();
 };
