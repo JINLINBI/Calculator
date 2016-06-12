@@ -159,9 +159,6 @@ bool CcalculatorDlg::m_IsLegal()
 				if (')' == now && (last == '+' || last== '-' || last == '*' || last == '/')) {//如果出现了*+/-的情况是不合法的
 					flag = false;
 				}
-				if (now <= 47 && now >= 42 && last >= 42 && last <= 47) {//如果是两个+-*/的符号,那么不合法
-					flag = false;
-				}
 				last = now;
 			}
 			
@@ -270,8 +267,10 @@ double CcalculatorDlg::m_Result()
 			TmpStack.push_back(tmp);
 		}
 	}
-	if(!TmpStack.empty())
-		tmp=TmpStack.back();
+	if (!TmpStack.empty()) {
+		tmp = TmpStack.back();
+		Equation.push_back(tmp);
+	}
 	numX = atof(tmp);
 	return numX;
 }
@@ -428,57 +427,114 @@ void CcalculatorDlg::OnBnClickedButtonZroe()
 
 void CcalculatorDlg::OnBnClickedButtonPlus()
 {
+	UpdateData(true);
+	char tmpChar = '0';
 	if (flag) {
 		m_EditText = "";
 		flag = false;
 	}
-	m_EditText += '+';
-	m_DealNum();
-	CString tmp = "+";
-	Equation.push_back(tmp);
-	UpdateData(false);
+	else {
+		tmpChar = m_EditText.GetAt(m_EditText.GetLength() - 1);
+	}
+	if (tmpChar <= 47 && tmpChar >= 42) {//如果是两个+-*/的符号,那么不合法
+		m_EditText.Delete(m_EditText.GetLength() - 1, 1);
+		m_EditText += '+';
+		Equation.pop_back();
+		Equation.push_back("+");
+		UpdateData(false);
+	}
+	else {
+		m_EditText += '+';
+		m_DealNum();
+		CString tmp = "+";
+		Equation.push_back(tmp);
+		UpdateData(false);
+	}
+	
 }
 
 
 void CcalculatorDlg::OnBnClickedButtonMinus()
 {
+	UpdateData(true);
+	char tmpChar = '0';
 	if (flag) {
 		m_EditText = "";
 		flag = false;
 	}
-	m_EditText += '-';
-	m_DealNum();
-	CString tmp = "-";
-	Equation.push_back(tmp);
-	UpdateData(false);
+	else {
+		tmpChar = m_EditText.GetAt(m_EditText.GetLength() - 1);
+	}
+	if (tmpChar <= 47 && tmpChar >= 42) {//如果是两个+-*/的符号,那么不合法
+		m_EditText.Delete(m_EditText.GetLength() - 1, 1);
+		Equation.pop_back();
+		m_EditText += '-';
+		Equation.push_back("-");
+		UpdateData(false);
+	}
+	else {
+		m_EditText += '-';
+		m_DealNum();
+		CString tmp = "-";
+		Equation.push_back(tmp);
+		UpdateData(false);
+	}
 }
 
 
 void CcalculatorDlg::OnBnClickedButton15Multi()
 {
+	UpdateData(true);
+	char tmpChar='0';
 	if (flag) {
 		m_EditText = "";
 		flag = false;
 	}
-	m_EditText += '*';
-	m_DealNum();
-	CString tmp = "*";
-	Equation.push_back(tmp);
-	UpdateData(false);
+	else {
+		tmpChar=m_EditText.GetAt(m_EditText.GetLength() - 1);
+	}
+	if (tmpChar <= 47 && tmpChar >= 42) {//如果是两个+-*/的符号,那么不合法
+		m_EditText.Delete(m_EditText.GetLength() - 1, 1);
+		Equation.pop_back();
+		m_EditText += '*';
+		Equation.push_back("*");
+		UpdateData(false);
+	}
+	else {
+		m_EditText += '*';
+		m_DealNum();
+		CString tmp = "*";
+		Equation.push_back(tmp);
+		UpdateData(false);
+	}
 }
 
 
 void CcalculatorDlg::OnBnClickedButtonDivide()
 {
+	UpdateData(true);
+	char tmpChar = '0';
 	if (flag) {
 		m_EditText = "";
 		flag = false;
 	}
-	m_EditText += '/';
-	m_DealNum();
-	CString tmp = "/";
-	Equation.push_back(tmp);
-	UpdateData(false);
+	else {
+		tmpChar = m_EditText.GetAt(m_EditText.GetLength() - 1);
+	}
+	if (tmpChar <= 47 && tmpChar >= 42) {//如果是两个+-*/的符号,那么不合法
+		m_EditText.Delete(m_EditText.GetLength() - 1, 1);
+		Equation.pop_back();
+		Equation.push_back("/");
+		m_EditText += '/';
+		UpdateData(false);
+	}
+	else {
+		m_EditText += '/';
+		m_DealNum();
+		CString tmp = "/";
+		Equation.push_back(tmp);
+		UpdateData(false);
+	}
 }
 
 
@@ -541,6 +597,11 @@ void CcalculatorDlg::OnBnClickedButtonRight()
 void CcalculatorDlg::OnBnClickedButtonCancel()
 {
 	
+	CString tmpStr;
+	if (m_EditText.Find('=') >= 0) {
+		m_EditText = "";
+		m_Edit = "";
+	}
 	int num = m_EditText.GetLength();
 	int length = m_Edit.GetLength();
 	char tmp;
@@ -550,6 +611,17 @@ void CcalculatorDlg::OnBnClickedButtonCancel()
 		if (tmp<='9'&& tmp>='0') {//如果删掉的是数字,那么不用出栈数据
 			if(length>0)
 			m_Edit.Delete(length - 1, 1);	//字符串减掉最后一个就好
+			else {
+				if (!Equation.empty())	//出栈数据
+				{
+					tmpStr = Equation.back();
+					tmpStr.Delete(tmpStr.GetLength() - 1, 1);
+					Equation.pop_back();
+					if (!tmpStr)
+						Equation.push_back(tmpStr);
+				}
+					
+			}
 			//UpdateData(false);
 		}
 		else {		
@@ -558,10 +630,7 @@ void CcalculatorDlg::OnBnClickedButtonCancel()
 		}
 		
 	}
-	if (m_EditText.Find('=')>=0) {
-		m_EditText = "";
-		m_Edit = "";
-	}
+	
 	UpdateData(false);
 }
 
