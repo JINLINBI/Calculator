@@ -42,13 +42,14 @@ public:
 	vector<CString> TmpStack;
 	vector<CString> FinalStack;
 	vector<CString> Equation;
+	vector<CString> BackUpStack;
 	bool m_IsLegal();
 	void m_ClearText();
 	bool m_DealNum();
-	bool flag = 0;
+	bool flag = 0;//计算之后再次要清除屏幕的标志
 	bool m_ToPostfix();
-	double m_Result();
-	double m_Calculate(double);
+	CString m_Result();
+	//double m_Calculate(double);
 	afx_msg void OnBnClickedButtonOne();
 	afx_msg void OnBnClickedButtonTwo();
 	afx_msg void OnBnClickedButtonThree();

@@ -124,13 +124,23 @@ void CcalculatorDlg::OnBnClickedOk()
 
 bool CcalculatorDlg::m_IsLegal()
 {
+	BackUpStack = Equation;//备份好数据栈的内容
 	bool isLegal = true;
 	CString insertStr="*";
 	char last='\0',now;
 	bool flag = true;
 	int countofMark = 0;
 	m_DealNum();
+	vector<CString>::iterator p;
 	if (!Equation.empty()) {
+		/*p = Equation.begin();
+		if (*p[0] == '+' || *p[0] == '-' || *p[0] == '*' || *p[0] == '/') {
+			flag = false;
+		}*/
+		p = Equation.end();//检查最后一个是否是运算符
+		if (*(p-1)[0] == '+' || *(p - 1)[0] == '-' || *(p - 1)[0] == '*' || *(p - 1)[0] == '/') {
+			flag = false;
+		}
 		for (vector<CString>::iterator it = Equation.begin(); it !=Equation.end(); it++) {
 			
 			if (*it[0] == '(') {
@@ -139,8 +149,18 @@ bool CcalculatorDlg::m_IsLegal()
 			else if (*it[0] == ')') {
 				countofMark -= 1;
 			}
+			else if (*it[0] == '.') {	//出现“.x”忘带0的情况补0
+				(*it).Insert(0, '0');
+			}
+			else if (*it[0] == '=') {
+				flag = false;
+			}
+
+
+
+
 			{
-				now = *it[0];
+				now = *it[0];//开始比较相邻的栈的内容
 
 				if (last == ')'&& now == '(') {	//如果是两个括号之间的话,添加一个*号
 					it = Equation.insert(it, insertStr);//将iterator指向*
@@ -163,9 +183,13 @@ bool CcalculatorDlg::m_IsLegal()
 			}
 			
 		}
-		if (countofMark != 0 || !flag) {
-			isLegal = false;
-		}
+	}
+	else {
+		flag = false;
+	}
+	if (countofMark != 0 || !flag) {	//出现括号不相等的情况与其他错误
+		isLegal = false;
+		Equation = BackUpStack;//出错！恢复栈的内容
 	}
 	return isLegal;
 }
@@ -191,7 +215,7 @@ bool CcalculatorDlg::m_DealNum()
 bool CcalculatorDlg::m_ToPostfix()
 {
 	CString tmp;
-	TmpStack.clear();
+	BackUpStack = Equation;	//保存栈的内容！！！！
 	if(!Equation.empty())
 	reverse(Equation.begin(), Equation.end());
 	while(!Equation.empty()) {
@@ -236,7 +260,7 @@ bool CcalculatorDlg::m_ToPostfix()
 	return true;
 }
 
-double CcalculatorDlg::m_Result()
+CString CcalculatorDlg::m_Result()
 {
 	CString tmp ;
 	double numX,numY;
@@ -269,10 +293,22 @@ double CcalculatorDlg::m_Result()
 	}
 	if (!TmpStack.empty()) {
 		tmp = TmpStack.back();
+		while ((tmp.Find('.'))>0/* 如果是在小数点之后的话*/ && (tmp[tmp.GetLength() - 1] == '0' || tmp[tmp.GetLength() - 1] == '.')) {//消除结果中小数后的0和逗号
+			char tmpChar = tmp[tmp.GetLength() - 1];
+			tmp.Delete(tmp.GetLength() - 1, 1);
+			if (tmpChar == '.') {
+				break;
+			}
+		}
 		Equation.push_back(tmp);
 	}
-	numX = atof(tmp);
-	return numX;
+	TmpStack.clear();
+	
+	//numX = atof(tmp);
+	//Equation = BackUpStack;	//恢复栈的内容
+	//Equation.push_back("=");
+	//Equation.push_back(tmp);
+	return tmp;
 }
 
 
@@ -280,6 +316,7 @@ void CcalculatorDlg::OnBnClickedButtonOne()
 {
 	if (flag) {
 		m_EditText = "";
+		Equation.clear();
 		flag = false;
 	}
 	m_EditText += '1';
@@ -292,6 +329,7 @@ void CcalculatorDlg::OnBnClickedButtonTwo()
 {
 	if (flag) {
 		m_EditText = "";
+		Equation.clear();
 		flag = false;
 	}
 	m_EditText += '2';
@@ -304,6 +342,7 @@ void CcalculatorDlg::OnBnClickedButtonThree()
 {
 	if (flag) {
 		m_EditText = "";
+		Equation.clear();
 		flag = false;
 	}
 	m_EditText += '3';
@@ -316,6 +355,7 @@ void CcalculatorDlg::OnBnClickedButtonFour()
 {
 	if (flag) {
 		m_EditText = "";
+		Equation.clear();
 		flag = false;
 	}
 	m_EditText += '4';
@@ -328,6 +368,7 @@ void CcalculatorDlg::OnBnClickedButtonFive()
 {
 	if (flag) {
 		m_EditText = "";
+		Equation.clear();
 		flag = false;
 	}
 	m_EditText += '5';
@@ -340,6 +381,7 @@ void CcalculatorDlg::OnBnClickedButtonSix()
 {
 	if (flag) {
 		m_EditText = "";
+		Equation.clear();
 		flag = false;
 	}
 	m_EditText += '6';
@@ -352,6 +394,7 @@ void CcalculatorDlg::OnBnClickedButtonSeven()
 {
 	if (flag) {
 		m_EditText = "";
+		Equation.clear();
 		flag = false;
 	}
 	m_EditText += '7';
@@ -364,6 +407,7 @@ void CcalculatorDlg::OnBnClickedButtonEight()
 {
 	if (flag) {
 		m_EditText = "";
+		Equation.clear();
 		flag = false;
 	}
 	m_EditText += '8';
@@ -376,6 +420,7 @@ void CcalculatorDlg::OnBnClickedButtonNine()
 {
 	if (flag) {
 		m_EditText = "";
+		Equation.clear();
 		flag = false;
 	}
 	m_EditText += '9';
@@ -391,6 +436,7 @@ void CcalculatorDlg::OnBnClickedButtonDot()
 	}
 	if (flag) {
 		m_EditText = "";
+		Equation.clear();
 		flag = false;
 	}
 	m_EditText += '.';
@@ -429,12 +475,15 @@ void CcalculatorDlg::OnBnClickedButtonPlus()
 {
 	UpdateData(true);
 	char tmpChar = '0';
-	if (flag) {
+	if (Equation.size() == 0 && m_EditText.GetLength()==0) {
+		return;
+	}
+	if (flag) {	//清屏
 		m_EditText = "";
 		flag = false;
 	}
 	else {
-		tmpChar = m_EditText.GetAt(m_EditText.GetLength() - 1);
+		tmpChar = m_EditText.GetAt(m_EditText.GetLength() - 1);	//取得文本框最后一个数字
 	}
 	if (tmpChar <= 47 && tmpChar >= 42) {//如果是两个+-*/的符号,那么不合法
 		m_EditText.Delete(m_EditText.GetLength() - 1, 1);
@@ -446,8 +495,7 @@ void CcalculatorDlg::OnBnClickedButtonPlus()
 	else {
 		m_EditText += '+';
 		m_DealNum();
-		CString tmp = "+";
-		Equation.push_back(tmp);
+		Equation.push_back("+");
 		UpdateData(false);
 	}
 	
@@ -458,6 +506,9 @@ void CcalculatorDlg::OnBnClickedButtonMinus()
 {
 	UpdateData(true);
 	char tmpChar = '0';
+	if (Equation.size() == 0 && m_EditText.GetLength() == 0) {
+		return;
+	}
 	if (flag) {
 		m_EditText = "";
 		flag = false;
@@ -475,8 +526,7 @@ void CcalculatorDlg::OnBnClickedButtonMinus()
 	else {
 		m_EditText += '-';
 		m_DealNum();
-		CString tmp = "-";
-		Equation.push_back(tmp);
+		Equation.push_back("-");
 		UpdateData(false);
 	}
 }
@@ -486,6 +536,9 @@ void CcalculatorDlg::OnBnClickedButton15Multi()
 {
 	UpdateData(true);
 	char tmpChar='0';
+	if (Equation.size() == 0 && m_EditText.GetLength() == 0) {
+		return;
+	}
 	if (flag) {
 		m_EditText = "";
 		flag = false;
@@ -503,8 +556,7 @@ void CcalculatorDlg::OnBnClickedButton15Multi()
 	else {
 		m_EditText += '*';
 		m_DealNum();
-		CString tmp = "*";
-		Equation.push_back(tmp);
+		Equation.push_back("*");
 		UpdateData(false);
 	}
 }
@@ -514,6 +566,9 @@ void CcalculatorDlg::OnBnClickedButtonDivide()
 {
 	UpdateData(true);
 	char tmpChar = '0';
+	if (Equation.size() == 0 && m_EditText.GetLength() == 0) {
+		return;
+	}
 	if (flag) {
 		m_EditText = "";
 		flag = false;
@@ -531,8 +586,7 @@ void CcalculatorDlg::OnBnClickedButtonDivide()
 	else {
 		m_EditText += '/';
 		m_DealNum();
-		CString tmp = "/";
-		Equation.push_back(tmp);
+		Equation.push_back("/");
 		UpdateData(false);
 	}
 }
@@ -553,11 +607,8 @@ void CcalculatorDlg::OnBnClickedButtonResult()
 		}
 		m_DealNum();
 		m_ToPostfix();//转换为后缀表达式
-		num = m_Result();//计算得到结果
-
-
-		tail.Format("=%f", num);
-		m_EditText += tail;
+		m_EditText += "=";
+		m_EditText += m_Result();	//将计算结果添加文本框末尾
 		UpdateData(false);
 		flag = true;
 	}
@@ -608,16 +659,17 @@ void CcalculatorDlg::OnBnClickedButtonCancel()
 	if (num > 0) {//如果有东西在输入框的话
 		tmp= m_EditText.GetAt(num-1);
 		m_EditText.Delete(num - 1, 1);
-		if (tmp<='9'&& tmp>='0') {//如果删掉的是数字,那么不用出栈数据
-			if(length>0)
-			m_Edit.Delete(length - 1, 1);	//字符串减掉最后一个就好
-			else {
+		if (tmp<='9'&& tmp>='0') {//如果删掉的是数字,那么有两种可能，要么数字已经入栈，要么数字还没入栈
+			if (length > 0) {//数字还没入栈
+				m_Edit.Delete(length - 1, 1);	//字符串减掉最后一个就好
+			}
+			else {//要出栈数字的部分
 				if (!Equation.empty())	//出栈数据
 				{
-					tmpStr = Equation.back();
-					tmpStr.Delete(tmpStr.GetLength() - 1, 1);
-					Equation.pop_back();
-					if (!tmpStr)
+					tmpStr = Equation.back();//复制数据栈顶数字
+					tmpStr.Delete(tmpStr.GetLength() - 1, 1);//数字减一长度
+					Equation.pop_back();//数据栈出栈
+					if (tmpStr.GetLength()>0)//如果数字还没有空，那么再将它入栈
 						Equation.push_back(tmpStr);
 				}
 					
