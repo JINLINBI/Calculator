@@ -122,7 +122,7 @@ void CcalculatorDlg::OnBnClickedOk()
 }
 
 
-bool CcalculatorDlg::m_IsLegal()
+bool CcalculatorDlg::m_IsLegal()	/*检查栈表达式是否正确的函数*/
 {
 	BackUpStack = Equation;//备份好数据栈的内容
 	bool isLegal = true;
@@ -153,6 +153,7 @@ bool CcalculatorDlg::m_IsLegal()
 				(*it).Insert(0, '0');
 			}
 			else if (*it[0] == '=') {
+				MessageBox("请不要连续输入两个等号！","提示：",MB_OK);
 				flag = false;
 			}
 
@@ -199,7 +200,7 @@ void CcalculatorDlg::m_ClearText()
 	m_Edit = "";
 }
 
-bool CcalculatorDlg::m_DealNum()
+bool CcalculatorDlg::m_DealNum()	/*处理数字入栈的函数*/
 {
 	
 	if (m_Edit.GetLength()>0) {
@@ -212,10 +213,10 @@ bool CcalculatorDlg::m_DealNum()
 	return true;
 }
 
-bool CcalculatorDlg::m_ToPostfix()
+bool CcalculatorDlg::m_ToPostfix()	/*将中缀表达式转换为后缀表达式的函数*/
 {
 	CString tmp;
-	BackUpStack = Equation;	//保存栈的内容！！！！
+	BackUpStack = Equation;			//备份栈的内容！！！！
 	if(!Equation.empty())
 	reverse(Equation.begin(), Equation.end());
 	while(!Equation.empty()) {
@@ -252,7 +253,6 @@ bool CcalculatorDlg::m_ToPostfix()
 			FinalStack.push_back(tmp);
 		}
 	}
-
 	while(!TmpStack.empty()) {
 		FinalStack.push_back(TmpStack.back());
 		TmpStack.pop_back();
@@ -260,7 +260,7 @@ bool CcalculatorDlg::m_ToPostfix()
 	return true;
 }
 
-CString CcalculatorDlg::m_Result()
+CString CcalculatorDlg::m_Result()	/*计算后缀表达式的计算结果的函数*/
 {
 	CString tmp ;
 	double numX,numY;
@@ -303,11 +303,6 @@ CString CcalculatorDlg::m_Result()
 		Equation.push_back(tmp);
 	}
 	TmpStack.clear();
-	
-	//numX = atof(tmp);
-	//Equation = BackUpStack;	//恢复栈的内容
-	//Equation.push_back("=");
-	//Equation.push_back(tmp);
 	return tmp;
 }
 
@@ -459,7 +454,7 @@ void CcalculatorDlg::OnBnClickedButtonDoubledot()
 }
 
 
-void CcalculatorDlg::OnBnClickedButtonZroe()
+void CcalculatorDlg::OnBnClickedButtonZroe()	/*数字0按钮触发的函数*/
 {
 	if (flag) {
 		m_EditText = "";
@@ -471,7 +466,7 @@ void CcalculatorDlg::OnBnClickedButtonZroe()
 }
 
 
-void CcalculatorDlg::OnBnClickedButtonPlus()
+void CcalculatorDlg::OnBnClickedButtonPlus()	/*加法按钮触发的函数*/
 {
 	UpdateData(true);
 	char tmpChar = '0';
@@ -592,7 +587,7 @@ void CcalculatorDlg::OnBnClickedButtonDivide()
 }
 
 
-void CcalculatorDlg::OnBnClickedButtonResult()
+void CcalculatorDlg::OnBnClickedButtonResult()	/*等号按钮触发的函数*/
 {
 	double num;
 	CString tail;
@@ -606,9 +601,9 @@ void CcalculatorDlg::OnBnClickedButtonResult()
 			flag = false;
 		}
 		m_DealNum();
-		m_ToPostfix();//转换为后缀表达式
-		m_EditText += "=";
-		m_EditText += m_Result();	//将计算结果添加文本框末尾
+		m_ToPostfix();							//转换为后缀表达式
+		m_EditText += "=";						//添加
+		m_EditText += m_Result();				//将计算结果添加文本框末尾
 		UpdateData(false);
 		flag = true;
 	}
@@ -698,3 +693,6 @@ void CcalculatorDlg::OnBnClickedButtonClear()
 	Equation.clear();
 	UpdateData(false);
 }
+
+
+

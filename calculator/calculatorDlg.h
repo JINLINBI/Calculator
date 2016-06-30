@@ -71,4 +71,5 @@ public:
 	afx_msg void OnBnClickedButtonRight();
 	afx_msg void OnBnClickedButtonCancel();
 	afx_msg void OnBnClickedButtonClear();
+	afx_msg void OnEnChangeEdit();
 };
