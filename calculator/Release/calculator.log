@@ -1,0 +1,10 @@
+﻿  stdafx.cpp
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\atlmfc\include\afx.h(38): warning C4996: 'MBCS_Support_Deprecated_In_MFC': MBCS support in MFC is deprecated and may be removed in a future version of MFC.
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\atlmfc\include\afx.h(33): note: 参见“MBCS_Support_Deprecated_In_MFC”的声明
+  calculator.cpp
+  calculatorDlg.cpp
+calculatorDlg.cpp(603): warning C4101: “num”: 未引用的局部变量
+  正在生成代码
+  All 346 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  已完成代码的生成
+  calculator.vcxproj -> C:\Users\jinyi\Desktop\calculator\Release\calculator.exe

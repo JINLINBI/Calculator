@@ -138,7 +138,7 @@ bool CcalculatorDlg::m_IsLegal()	/*检查栈表达式是否正确的函数*/
 			flag = false;
 		}*/
 		p = Equation.end();//检查最后一个是否是运算符
-		if (*(p-1)[0] == '+' || *(p - 1)[0] == '-' || *(p - 1)[0] == '*' || *(p - 1)[0] == '/') {
+		if (*(p-1)[0] == '+' || (*(p - 1)[0] == '-' && (*p).GetLength()==1) || *(p - 1)[0] == '*' || *(p - 1)[0] == '/') {
 			flag = false;
 		}
 		for (vector<CString>::iterator it = Equation.begin(); it !=Equation.end(); it++) {
@@ -155,6 +155,15 @@ bool CcalculatorDlg::m_IsLegal()	/*检查栈表达式是否正确的函数*/
 			else if (*it[0] == '=') {
 				MessageBox("请不要连续输入两个等号！","提示：",MB_OK);
 				flag = false;
+			}
+			else if (*it[0] == '-' && (*it).GetLength() != 1) {
+				(*it).Delete(0, 1);
+				it = Equation.insert(it + 1, ")"); 
+				it = Equation.insert(it-1, "-");
+				it = Equation.insert(it , "0");
+				it = Equation.insert(it, "(");
+				it = it + 4;
+				last = ')';
 			}
 
 
@@ -178,6 +187,9 @@ bool CcalculatorDlg::m_IsLegal()	/*检查栈表达式是否正确的函数*/
 					flag = false;
 				}
 				if (')' == now && (last == '+' || last== '-' || last == '*' || last == '/')) {//如果出现了*+/-的情况是不合法的
+					flag = false;
+				}
+				if ('(' == last && ')' == now) {
 					flag = false;
 				}
 				last = now;
